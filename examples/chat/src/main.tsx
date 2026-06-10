@@ -3,9 +3,12 @@ import { DefaultChatTransport, type UIMessage } from 'ai';
 import {
   FileDiffIcon,
   FileTextIcon,
+  type LucideIcon,
   MessageSquareIcon,
+  PanelLeftIcon,
   PanelRightCloseIcon,
   PanelRightOpenIcon,
+  XIcon,
 } from 'lucide-react';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -62,6 +65,9 @@ import {
 import { SpeechInput } from '@/components/ai-elements/speech-input';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from '@/components/ai-elements/tool';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
+import { useMediaQuery } from '@/lib/use-media-query';
 
 import './index.css';
 
@@ -144,7 +150,7 @@ const collectFilePaths = (nodes: FileTreeNode[], into: Set<string>) => {
   return into;
 };
 
-const WorkspaceSidebar = ({
+const WorkspacePanel = ({
   root,
   tree,
   git,
@@ -160,7 +166,7 @@ const WorkspaceSidebar = ({
   const dirtyDirs = React.useMemo(() => collectDirtyDirs(git.files), [git.files]);
 
   return (
-    <aside className="hidden w-64 shrink-0 flex-col overflow-hidden border-r md:flex">
+    <>
       <div className="border-b px-4 py-3">
         <h2 className="font-semibold text-sm">
           Workspace
@@ -182,7 +188,7 @@ const WorkspaceSidebar = ({
           {renderTreeNodes(tree, git.files, dirtyDirs)}
         </FileTree>
       </div>
-    </aside>
+    </>
   );
 };
 
@@ -215,21 +221,32 @@ const languageForPath = (path: string) => {
 
 const MIN_ARTIFACT_WIDTH = 280;
 const MAX_ARTIFACT_WIDTH = 800;
+const WORKSPACE_SIDEBAR_WIDTH = 256; // w-64
+const MIN_CHAT_WIDTH = 480;
 
-const ArtifactSidebar = ({
+// Keep the artifact panel between its own bounds and whatever the viewport can
+// spare without crushing the conversation column.
+const clampArtifactWidth = (value: number) => {
+  const available = window.innerWidth - WORKSPACE_SIDEBAR_WIDTH - MIN_CHAT_WIDTH;
+  const max = Math.max(MIN_ARTIFACT_WIDTH, Math.min(MAX_ARTIFACT_WIDTH, available));
+  return Math.min(max, Math.max(MIN_ARTIFACT_WIDTH, value));
+};
+
+const ArtifactPanel = ({
   path,
   dirty,
   version,
-  open,
-  onOpenChange,
+  closeIcon,
+  closeLabel,
+  onClose,
 }: {
   path?: string;
   dirty: boolean;
   version: number;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  closeIcon: LucideIcon;
+  closeLabel: string;
+  onClose: () => void;
 }) => {
-  const [width, setWidth] = React.useState(420);
   const [view, setView] = React.useState<'file' | 'diff'>('file');
   const [content, setContent] = React.useState<string>();
   const [loadError, setLoadError] = React.useState<string>();
@@ -287,6 +304,79 @@ const ArtifactSidebar = ({
     };
   }, [path, version, effectiveView]);
 
+  return (
+    <Artifact className="h-full rounded-none border-none shadow-none">
+      <ArtifactHeader>
+        <div className="min-w-0">
+          <ArtifactTitle className="truncate">
+            {path ? path.split('/').pop() : 'Artifact'}
+          </ArtifactTitle>
+          <ArtifactDescription className="truncate text-xs" title={path}>
+            {path ?? 'No file open'}
+          </ArtifactDescription>
+        </div>
+        <ArtifactActions>
+          {dirty && (
+            <ArtifactAction
+              icon={effectiveView === 'diff' ? FileTextIcon : FileDiffIcon}
+              label={effectiveView === 'diff' ? 'Show file' : 'Show diff'}
+              onClick={() => setView(effectiveView === 'diff' ? 'file' : 'diff')}
+              tooltip={effectiveView === 'diff' ? 'Show file' : 'Show diff'}
+            />
+          )}
+          <ArtifactAction
+            icon={closeIcon}
+            label={closeLabel}
+            onClick={onClose}
+            tooltip={closeLabel}
+          />
+        </ArtifactActions>
+      </ArtifactHeader>
+      <ArtifactContent className="p-0">
+        {!path ? (
+          <div className="flex h-full items-center justify-center p-4">
+            <p className="text-center text-muted-foreground text-sm">
+              Select a file on the left or let Pi create one in the chat.
+            </p>
+          </div>
+        ) : loadError ? (
+          <p className="p-4 text-muted-foreground text-sm">{loadError}</p>
+        ) : content !== undefined ? (
+          <CodeBlock
+            className="rounded-none border-none"
+            code={content}
+            language={effectiveView === 'diff' ? 'diff' : languageForPath(path)}
+            showLineNumbers={effectiveView === 'file'}
+          />
+        ) : (
+          <p className="p-4 text-muted-foreground text-sm">Loading…</p>
+        )}
+      </ArtifactContent>
+    </Artifact>
+  );
+};
+
+const ArtifactSidebar = ({
+  path,
+  dirty,
+  version,
+  open,
+  onOpenChange,
+}: {
+  path?: string;
+  dirty: boolean;
+  version: number;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
+  const [width, setWidth] = React.useState(() => clampArtifactWidth(420));
+
+  React.useEffect(() => {
+    const handleWindowResize = () => setWidth(clampArtifactWidth);
+    window.addEventListener('resize', handleWindowResize);
+    return () => window.removeEventListener('resize', handleWindowResize);
+  }, []);
+
   const handleResizePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -296,14 +386,12 @@ const ArtifactSidebar = ({
     if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
       return;
     }
-    setWidth(
-      Math.min(MAX_ARTIFACT_WIDTH, Math.max(MIN_ARTIFACT_WIDTH, window.innerWidth - event.clientX)),
-    );
+    setWidth(clampArtifactWidth(window.innerWidth - event.clientX));
   };
 
   if (!open) {
     return (
-      <aside className="hidden shrink-0 flex-col items-center border-l p-1 md:flex">
+      <aside className="flex shrink-0 flex-col items-center border-l p-1">
         <ArtifactAction
           icon={PanelRightOpenIcon}
           label="Show artifact"
@@ -316,7 +404,7 @@ const ArtifactSidebar = ({
 
   return (
     <aside
-      className="relative hidden shrink-0 flex-col overflow-hidden border-l md:flex"
+      className="relative flex shrink-0 flex-col overflow-hidden border-l"
       style={{ width }}
     >
       <div
@@ -325,54 +413,14 @@ const ArtifactSidebar = ({
         onPointerMove={handleResizePointerMove}
         role="separator"
       />
-      <Artifact className="h-full rounded-none border-none shadow-none">
-        <ArtifactHeader>
-          <div className="min-w-0">
-            <ArtifactTitle className="truncate">
-              {path ? path.split('/').pop() : 'Artifact'}
-            </ArtifactTitle>
-            <ArtifactDescription className="truncate text-xs" title={path}>
-              {path ?? 'No file open'}
-            </ArtifactDescription>
-          </div>
-          <ArtifactActions>
-            {dirty && (
-              <ArtifactAction
-                icon={effectiveView === 'diff' ? FileTextIcon : FileDiffIcon}
-                label={effectiveView === 'diff' ? 'Show file' : 'Show diff'}
-                onClick={() => setView(effectiveView === 'diff' ? 'file' : 'diff')}
-                tooltip={effectiveView === 'diff' ? 'Show file' : 'Show diff'}
-              />
-            )}
-            <ArtifactAction
-              icon={PanelRightCloseIcon}
-              label="Collapse"
-              onClick={() => onOpenChange(false)}
-              tooltip="Collapse"
-            />
-          </ArtifactActions>
-        </ArtifactHeader>
-        <ArtifactContent className="p-0">
-          {!path ? (
-            <div className="flex h-full items-center justify-center p-4">
-              <p className="text-center text-muted-foreground text-sm">
-                Select a file on the left or let Pi create one in the chat.
-              </p>
-            </div>
-          ) : loadError ? (
-            <p className="p-4 text-muted-foreground text-sm">{loadError}</p>
-          ) : content !== undefined ? (
-            <CodeBlock
-              className="rounded-none border-none"
-              code={content}
-              language={effectiveView === 'diff' ? 'diff' : languageForPath(path)}
-              showLineNumbers={effectiveView === 'file'}
-            />
-          ) : (
-            <p className="p-4 text-muted-foreground text-sm">Loading…</p>
-          )}
-        </ArtifactContent>
-      </Artifact>
+      <ArtifactPanel
+        closeIcon={PanelRightCloseIcon}
+        closeLabel="Collapse"
+        dirty={dirty}
+        onClose={() => onOpenChange(false)}
+        path={path}
+        version={version}
+      />
     </aside>
   );
 };
@@ -411,6 +459,12 @@ function App() {
   const [artifactPath, setArtifactPath] = React.useState<string>();
   const [artifactOpen, setArtifactOpen] = React.useState(false);
   const [artifactVersion, setArtifactVersion] = React.useState(0);
+  const [workspaceSheetOpen, setWorkspaceSheetOpen] = React.useState(false);
+  const [artifactSheetOpen, setArtifactSheetOpen] = React.useState(false);
+  // Pi wrote a file while the artifact UI wasn't visible (badge on the toggle).
+  const [artifactUnseen, setArtifactUnseen] = React.useState(false);
+  const isWorkspaceInline = useMediaQuery('(min-width: 768px)');
+  const isArtifactInline = useMediaQuery('(min-width: 1024px)');
   const { messages, sendMessage, status, stop, error, setMessages } = useChat({
     id: chatId,
     transport,
@@ -467,6 +521,8 @@ function App() {
 
   // Open files Pi creates or edits in the artifact panel as they happen. The
   // status guard keeps hydrated history from popping the panel open on load.
+  // When the panel is an overlay (below lg) it would cover the conversation,
+  // so only badge the toggle instead of opening it.
   const seenWritesRef = React.useRef(0);
   React.useEffect(() => {
     if (completedWrites.length > seenWritesRef.current && isBusy) {
@@ -475,12 +531,16 @@ function App() {
         ? written.slice(workspace.root.length + 1)
         : written;
       setArtifactPath(relative);
-      setArtifactOpen(true);
       setArtifactVersion((previous) => previous + 1);
+      if (isArtifactInline) {
+        setArtifactOpen(true);
+      } else {
+        setArtifactUnseen(true);
+      }
       refreshWorkspace();
     }
     seenWritesRef.current = completedWrites.length;
-  }, [completedWrites, isBusy, workspace.root, refreshWorkspace]);
+  }, [completedWrites, isBusy, workspace.root, refreshWorkspace, isArtifactInline]);
 
   // Hydrate prior session history from the bridge (GET /api/chat/:id).
   React.useEffect(() => {
@@ -515,35 +575,81 @@ function App() {
     void sendMessage({ text: suggestion });
   };
 
+  const handleArtifactSheetOpenChange = (open: boolean) => {
+    setArtifactSheetOpen(open);
+    if (open) {
+      setArtifactUnseen(false);
+    }
+  };
+
   const handleFileSelect = (path: string) => {
     setSelectedFile(path);
     if (filePaths.has(path)) {
       setArtifactPath(path);
-      setArtifactOpen(true);
       setArtifactVersion((previous) => previous + 1);
+      if (isArtifactInline) {
+        setArtifactOpen(true);
+      } else {
+        handleArtifactSheetOpenChange(true);
+      }
+      setWorkspaceSheetOpen(false);
     }
   };
 
+  const artifactDirty = Boolean(artifactPath && gitStatus.files[artifactPath]);
+
   return (
     <div className="flex h-dvh">
-      <WorkspaceSidebar
-        git={gitStatus}
-        onSelect={handleFileSelect}
-        root={workspace.root}
-        selectedPath={selectedFile}
-        tree={workspace.files}
-      />
+      {isWorkspaceInline && (
+        <aside className="flex w-64 shrink-0 flex-col overflow-hidden border-r">
+          <WorkspacePanel
+            git={gitStatus}
+            onSelect={handleFileSelect}
+            root={workspace.root}
+            selectedPath={selectedFile}
+            tree={workspace.files}
+          />
+        </aside>
+      )}
       <div className="mx-auto flex h-full min-w-0 max-w-4xl flex-1 flex-col">
-        <header className="flex items-center justify-between border-b px-4 py-3">
-          <div>
-            <h1 className="font-semibold text-sm">Pi ↔ AI SDK bridge</h1>
-            <p className="text-muted-foreground text-xs">
-              Chat <code>{chatId}</code> · streaming from a live Pi coding agent
-            </p>
+        <header className="flex items-center justify-between gap-2 border-b px-4 py-3">
+          <div className="flex min-w-0 items-center gap-2">
+            {!isWorkspaceInline && (
+              <Button
+                onClick={() => setWorkspaceSheetOpen(true)}
+                size="icon-sm"
+                variant="ghost"
+              >
+                <PanelLeftIcon />
+                <span className="sr-only">Show workspace</span>
+              </Button>
+            )}
+            <div className="min-w-0">
+              <h1 className="font-semibold text-sm">Pi ↔ AI SDK bridge</h1>
+              <p className="truncate text-muted-foreground text-xs">
+                Chat <code>{chatId}</code> · streaming from a live Pi coding agent
+              </p>
+            </div>
           </div>
-          <span className="rounded-full border px-2.5 py-0.5 text-muted-foreground text-xs uppercase">
-            {status}
-          </span>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="rounded-full border px-2.5 py-0.5 text-muted-foreground text-xs uppercase">
+              {status}
+            </span>
+            {!isArtifactInline && (
+              <Button
+                className="relative"
+                onClick={() => handleArtifactSheetOpenChange(true)}
+                size="icon-sm"
+                variant="ghost"
+              >
+                <PanelRightOpenIcon />
+                {artifactUnseen && (
+                  <span className="absolute top-1 right-1 size-1.5 rounded-full bg-amber-500" />
+                )}
+                <span className="sr-only">Show artifact</span>
+              </Button>
+            )}
+          </div>
         </header>
 
         <Conversation className="flex-1">
@@ -622,13 +728,49 @@ function App() {
           </div>
         </div>
       </div>
-      <ArtifactSidebar
-        dirty={Boolean(artifactPath && gitStatus.files[artifactPath])}
-        onOpenChange={setArtifactOpen}
-        open={artifactOpen}
-        path={artifactPath}
-        version={artifactVersion}
-      />
+      {isArtifactInline ? (
+        <ArtifactSidebar
+          dirty={artifactDirty}
+          onOpenChange={setArtifactOpen}
+          open={artifactOpen}
+          path={artifactPath}
+          version={artifactVersion}
+        />
+      ) : (
+        <Sheet onOpenChange={handleArtifactSheetOpenChange} open={artifactSheetOpen}>
+          <SheetContent
+            className="w-[90vw] gap-0 p-0 sm:max-w-xl"
+            showCloseButton={false}
+            side="right"
+          >
+            <SheetTitle className="sr-only">Artifact</SheetTitle>
+            <SheetDescription className="sr-only">File preview</SheetDescription>
+            <ArtifactPanel
+              closeIcon={XIcon}
+              closeLabel="Close"
+              dirty={artifactDirty}
+              onClose={() => handleArtifactSheetOpenChange(false)}
+              path={artifactPath}
+              version={artifactVersion}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
+      {!isWorkspaceInline && (
+        <Sheet onOpenChange={setWorkspaceSheetOpen} open={workspaceSheetOpen}>
+          <SheetContent className="gap-0 p-0" side="left">
+            <SheetTitle className="sr-only">Workspace</SheetTitle>
+            <SheetDescription className="sr-only">Project file tree</SheetDescription>
+            <WorkspacePanel
+              git={gitStatus}
+              onSelect={handleFileSelect}
+              root={workspace.root}
+              selectedPath={selectedFile}
+              tree={workspace.files}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
