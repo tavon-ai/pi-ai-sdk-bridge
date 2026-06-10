@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { serve } from "@hono/node-server";
+import { createWorkspaceHandler } from "@tavon-ai/workspace-server";
 import { Hono } from "hono";
 import { createPiChatHandler } from "./server/create-chat-handler.js";
 
@@ -9,22 +10,38 @@ interface CliOptions {
   host?: string;
   tools?: string[];
   basePath: string;
+  workspace: boolean;
+  workspaceBasePath: string;
 }
 
 const options = parseCli(process.argv.slice(2));
 const handler = createPiChatHandler({ cwd: options.cwd, tools: options.tools, basePath: options.basePath });
 const app = new Hono();
 
+// Composition root: the chat bridge and the read-only workspace API are
+// separate handlers/packages, mounted together here for convenience.
+if (options.workspace) {
+  const workspaceHandler = createWorkspaceHandler({ cwd: options.cwd, basePath: options.workspaceBasePath });
+  app.all(`${options.workspaceBasePath}/*`, async (c) => workspaceHandler(c.req.raw));
+}
 app.all("/*", async (c) => handler(c.req.raw));
 
 serve({ fetch: app.fetch, port: options.port, hostname: options.host }, (info) => {
   console.log(`pi-ai-sdk bridge listening on http://${info.address}:${info.port}${options.basePath}`);
+  if (options.workspace) console.log(`workspace API: http://${info.address}:${info.port}${options.workspaceBasePath}`);
   console.log(`cwd: ${options.cwd}`);
   console.log(`tools: ${options.tools?.join(",") ?? "pi default"}`);
 });
 
 function parseCli(args: string[]): CliOptions {
-  const options: CliOptions = { cwd: process.cwd(), port: 3001, host: "127.0.0.1", basePath: "/api/chat" };
+  const options: CliOptions = {
+    cwd: process.cwd(),
+    port: 3001,
+    host: "127.0.0.1",
+    basePath: "/api/chat",
+    workspace: true,
+    workspaceBasePath: "/api/workspace",
+  };
 
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
@@ -46,6 +63,12 @@ function parseCli(args: string[]): CliOptions {
         break;
       case "--base-path":
         options.basePath = requireValue(args, ++i, arg);
+        break;
+      case "--no-workspace":
+        options.workspace = false;
+        break;
+      case "--workspace-base-path":
+        options.workspaceBasePath = requireValue(args, ++i, arg);
         break;
       case "--help":
       case "-h":
@@ -73,5 +96,5 @@ function splitCsv(value: string): string[] {
 }
 
 function printHelp(): void {
-  console.log(`Usage: pi-bridge [options]\n\nOptions:\n  --cwd <dir>          Workspace directory (default: current directory)\n  --port, -p <port>    Port to listen on (default: 3001)\n  --host <host>        Hostname to bind\n  --tools, -t <list>   Comma-separated Pi tool allowlist\n  --base-path <path>   Chat API base path (default: /api/chat)\n  --help, -h           Show this help\n`);
+  console.log(`Usage: pi-bridge [options]\n\nOptions:\n  --cwd <dir>                  Workspace directory (default: current directory)\n  --port, -p <port>            Port to listen on (default: 3001)\n  --host <host>                Hostname to bind\n  --tools, -t <list>           Comma-separated Pi tool allowlist\n  --base-path <path>           Chat API base path (default: /api/chat)\n  --no-workspace               Disable the read-only workspace API\n  --workspace-base-path <path> Workspace API base path (default: /api/workspace)\n  --help, -h                   Show this help\n`);
 }

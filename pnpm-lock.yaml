@@ -117,6 +117,9 @@ importers:
       '@hono/node-server':
         specifier: ^2.0.4
         version: 2.0.4(hono@4.12.25)
+      '@tavon-ai/workspace-server':
+        specifier: workspace:^
+        version: link:../workspace-server
       hono:
         specifier: ^4.10.5
         version: 4.12.25
@@ -124,6 +127,8 @@ importers:
       ai:
         specifier: ^6.0.199
         version: 6.0.199(zod@4.4.3)
+
+  packages/workspace-server: {}
 
 packages:
 
