@@ -1,6 +1,6 @@
 # @tavon-ai/pi-ai-sdk-bridge
 
-Third-party bridge from Pi `AgentSession` events to AI SDK v6 `useChat` UI message streams.
+Bridge from Pi `AgentSession` events to AI SDK v6 `useChat` UI message streams.
 
 ```bash
 npx @tavon-ai/pi-ai-sdk-bridge --cwd /path/to/project --port 3001

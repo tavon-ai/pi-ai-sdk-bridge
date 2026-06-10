@@ -83,5 +83,3 @@ Completed against [`implementation-plan.md`](implementation-plan.md):
 - ❌ auth/CORS/rate limiting hardening
 - ❌ scheduled CI against latest Pi
 - ❌ full deployment/security docs
-
-Current state is roughly: **M0 complete + much of M1 + part of M2**, but persistence and production hardening are not done yet.

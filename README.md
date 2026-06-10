@@ -81,8 +81,6 @@ Pi tools can execute code on the bridge host. Run this bridge inside your contai
 
 ## Documentation
 
-All project documentation beyond this core README lives in [`docs/`](docs/):
-
 - [`docs/roadmap.md`](docs/roadmap.md) — implementation status and remaining work.
 - [`docs/implementation-plan.md`](docs/implementation-plan.md) — protocol mapping and milestone plan.
 - [`docs/examples.md`](docs/examples.md) — chat demo instructions.
