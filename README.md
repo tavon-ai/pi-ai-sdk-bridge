@@ -1,6 +1,6 @@
 # pi-ai-sdk-bridge
 
-Third-party bridge from [`@earendil-works/pi-coding-agent`](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) `AgentSession` streams to Vercel AI SDK v6 `useChat` UI message streams.
+A bridge from [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) `AgentSession` streams to [Vercel AI SDK](https://ai-sdk.dev/) `useChat` UI message streams.
 
 The goal is to use rich [AI Elements](https://elements.ai-sdk.dev/) for the UI while using Pi as the agent harness.
 
@@ -16,9 +16,11 @@ The goal is to use rich [AI Elements](https://elements.ai-sdk.dev/) for the UI w
 
 This lets a frontend use AI SDK `useChat` and AI Elements while the backend keeps Pi's agent loop, tools, session state, and streaming events.
 
-## Quick start
+## Demo Quick start
 
 ```sh
+git clone git@github.com:tavon-ai/pi-ai-sdk-bridge.git; cd pi-ai-sdk-bridge
+
 pnpm install
 pnpm build
 pnpm bridge
