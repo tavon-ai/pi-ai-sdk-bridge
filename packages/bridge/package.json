@@ -4,6 +4,9 @@
   "description": "Third-party bridge from pi AgentSession streams to Vercel AI SDK useChat UI message streams.",
   "type": "module",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
