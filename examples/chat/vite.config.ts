@@ -3,6 +3,8 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
+const bridgeOrigin = process.env.PI_BRIDGE_ORIGIN ?? 'http://127.0.0.1:3001';
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -13,7 +15,11 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/chat': {
-        target: process.env.PI_BRIDGE_ORIGIN ?? 'http://127.0.0.1:3001',
+        target: bridgeOrigin,
+        changeOrigin: true,
+      },
+      '/api/workspace': {
+        target: bridgeOrigin,
         changeOrigin: true,
       },
     },
