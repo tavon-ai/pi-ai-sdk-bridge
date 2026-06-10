@@ -2,6 +2,12 @@
 
 @import "tw-animate-css";
 
+/* Streamdown ships prebuilt components styled with Tailwind classes; without
+   these @source directives Tailwind v4 never generates the classes that only
+   appear inside the library (e.g. pointer-events-auto on code-block actions). */
+@source "../node_modules/streamdown/dist/*.js";
+@source "../node_modules/@streamdown/*/dist/*.js";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
