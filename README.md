@@ -19,7 +19,7 @@ This lets a frontend use AI SDK `useChat` and AI Elements while the backend keep
 ## Demo Quick start
 
 ```sh
-git clone git@github.com:tavon-ai/pi-ai-sdk-bridge.git; cd pi-ai-sdk-bridge
+git clone https://github.com/tavon-ai/pi-ai-sdk-bridge.git; cd pi-ai-sdk-bridge
 
 pnpm install
 pnpm build

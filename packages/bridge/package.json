@@ -1,9 +1,34 @@
 {
   "name": "@tavon-ai/pi-ai-sdk-bridge",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Third-party bridge from pi AgentSession streams to Vercel AI SDK useChat UI message streams.",
   "type": "module",
   "license": "MIT",
+  "author": "Tavon AI",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tavon-ai/pi-ai-sdk-bridge.git",
+    "directory": "packages/bridge"
+  },
+  "homepage": "https://github.com/tavon-ai/pi-ai-sdk-bridge#readme",
+  "bugs": {
+    "url": "https://github.com/tavon-ai/pi-ai-sdk-bridge/issues"
+  },
+  "keywords": [
+    "pi",
+    "pi-coding-agent",
+    "ai-sdk",
+    "vercel-ai-sdk",
+    "useChat",
+    "ai-elements",
+    "agent",
+    "chat",
+    "streaming",
+    "bridge"
+  ],
+  "engines": {
+    "node": ">=22.19.0"
+  },
   "publishConfig": {
     "access": "public"
   },
