@@ -2,51 +2,32 @@
 
 Third-party bridge from [`@earendil-works/pi-coding-agent`](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) `AgentSession` streams to Vercel AI SDK v6 `useChat` UI message streams.
 
-> This is not an official Pi or Vercel package. Running Pi tools behind an HTTP API is remote code execution on the bridge host; run it inside your isolation boundary and do not expose it unauthenticated.
+The goal is to use rich [AI Elements](https://elements.ai-sdk.dev/) for the UI while using Pi as the agent harness.
 
-## Current status
+![pi-ai-sdk-bridge chat demo](docs/screenshot.png)
 
-Initial implementation in `packages/bridge`:
+## Quick start
 
-- `POST /api/chat` streams AI SDK `UIMessageChunk` SSE responses from Pi sessions.
-- `GET /api/chat/:id` returns converted in-memory session history.
-- `GET /api/chat/:id/stream` returns `204` (resume not implemented yet).
-- `DELETE /api/chat/:id` disposes an in-memory session.
-- `pi-bridge` CLI starts a Hono/Node server.
-
-## Development
-
-```bash
+```sh
 pnpm install
 pnpm build
-```
-
-## Local demo app
-
-After installing/building from the repo root, run the demo commands from the example app directory:
-
-```bash
-cd examples/chat
-```
-
-Terminal 1:
-
-```bash
 pnpm bridge
 ```
 
-Terminal 2:
+Then run the chat demo:
 
 ```bash
+cd examples/chat
 pnpm dev
 ```
 
-The Vite app proxies `/api/chat` to the bridge, so no CORS setup is needed. Open <http://127.0.0.1:5173>. Make sure Pi has model auth configured first, for example via `ANTHROPIC_API_KEY` or an existing `pi /login` setup.
+Open <http://127.0.0.1:5173>. The Vite app proxies `/api/chat` to the bridge, so no CORS setup is needed locally.
 
-Client transport example:
+## Documentation
 
-```ts
-import { DefaultChatTransport } from 'ai';
+All project documentation beyond this core README lives in [`docs/`](docs/):
 
-const transport = new DefaultChatTransport({ api: 'http://localhost:3001/api/chat' });
-```
+- [`docs/roadmap.md`](docs/roadmap.md) — implementation status and remaining work.
+- [`docs/implementation-plan.md`](docs/implementation-plan.md) — protocol mapping and milestone plan.
+- [`docs/examples.md`](docs/examples.md) — chat demo instructions.
+- [`docs/package.md`](docs/package.md) — package/CLI notes and security warning.

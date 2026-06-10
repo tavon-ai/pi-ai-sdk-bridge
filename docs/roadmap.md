@@ -1,6 +1,6 @@
 # Roadmap / Implementation Status
 
-Completed against `pi-usechat-bridge-implementation-plan.md`:
+Completed against [`implementation-plan.md`](implementation-plan.md):
 
 ## Repo/package setup
 
