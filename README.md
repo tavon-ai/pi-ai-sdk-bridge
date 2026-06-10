@@ -1,6 +1,6 @@
 # pi-ai-sdk-bridge
 
-A bridge from [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) `AgentSession` streams to [Vercel AI SDK](https://ai-sdk.dev/) `useChat` UI message streams.
+A bridge from [pi-coding-agent](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) `AgentSession` events to [Vercel AI SDK](https://ai-sdk.dev/) `useChat` UI message streams.
 
 The goal is to use rich [AI Elements](https://elements.ai-sdk.dev/) for the UI while using Pi as the agent harness.
 
