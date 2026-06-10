@@ -331,7 +331,7 @@ const ArtifactSidebar = ({
             <ArtifactTitle className="truncate">
               {path ? path.split('/').pop() : 'Artifact'}
             </ArtifactTitle>
-            <ArtifactDescription className="truncate" title={path}>
+            <ArtifactDescription className="truncate text-xs" title={path}>
               {path ?? 'No file open'}
             </ArtifactDescription>
           </div>
