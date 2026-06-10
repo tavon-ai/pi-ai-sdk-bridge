@@ -2,13 +2,22 @@
 
 ## Web UI AI Elements demo
 
-A minimal Vite + React app is available in:
+A full chatbot demo built with [AI Elements](https://ai-sdk.dev/elements) (Vite + React + Tailwind) is available in:
 
 ```text
 examples/web-ui-ai-elements
 ```
 
-It uses AI SDK `useChat` with the Pi bridge API.
+It uses AI SDK `useChat` with the Pi bridge API. Everything in the UI is driven by the live bridge — no mocked data:
+
+- streaming markdown responses (`Message`/`MessageResponse`)
+- collapsible reasoning blocks (`Reasoning`)
+- live tool calls with input/output and status badges (`Tool`)
+- image attachments (file picker or drag & drop, forwarded to Pi)
+- prompt suggestions, speech input, stop button, error display
+- session history hydration from `GET /api/chat/:id` (reload the page and the conversation is still there; switch sessions via `?id=<chatId>`)
+
+The AI Elements components are vendored under `src/components/` (installed via `npx ai-elements@latest`).
 
 ### 1. Start the bridge
 
@@ -16,9 +25,7 @@ It uses AI SDK `useChat` with the Pi bridge API.
 # cd tavon-ai/pi-ai-sdk-bridge
 pnpm install
 pnpm build
-```
 
-```sh
 pnpm bridge
 ```
 
