@@ -1,11 +1,11 @@
 # Examples
 
-## Web UI AI Elements demo
+## Chat demo
 
 A full chatbot demo built with [AI Elements](https://ai-sdk.dev/elements) (Vite + React + Tailwind) is available in:
 
 ```text
-examples/web-ui-ai-elements
+examples/chat
 ```
 
 It uses AI SDK `useChat` with the Pi bridge API. Everything in the UI is driven by the live bridge — no mocked data:
@@ -33,7 +33,7 @@ This starts the bridge on `http://127.0.0.1:3001/api/chat` and points Pi to the 
 
 ### 2. Start the demo app
 
-In a new terminal from `examples/web-ui-ai-elements`:
+In a new terminal from `examples/chat`:
 
 ```bash
 pnpm dev

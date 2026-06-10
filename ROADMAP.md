@@ -76,7 +76,7 @@ Completed against `pi-usechat-bridge-implementation-plan.md`:
 - ❌ Persistent session files keyed by chatId
 - ❌ Re-open persisted sessions on restart
 - ❌ Full real Pi-recorded fixtures
-- ✅ AI Elements demo app (`examples/web-ui-ai-elements`)
+- ✅ AI Elements demo app (`examples/chat`)
 - ❌ richer `data-pi-*` session events
 - ❌ real stream resume/ring buffer
 - ❌ regenerate/branching support

@@ -26,7 +26,7 @@ pnpm build
 After installing/building from the repo root, run the demo commands from the example app directory:
 
 ```bash
-cd examples/web-ui-ai-elements
+cd examples/chat
 ```
 
 Terminal 1:

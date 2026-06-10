@@ -171,7 +171,7 @@ packages/bridge/                     # @tavon-ai/pi-ai-sdk-bridge
     fixtures/                        # recorded Pi event sequences (JSON)
     *.test.ts
 examples/
-  web-ui-ai-elements/                # Vite/Next demo app (M2/M3), workspace package, not published
+  chat/                              # Vite/Next demo app (M2/M3), workspace package, not published
 ```
 
 The package ships a `pi-bridge` bin entry (declared in `package.json#bin`) so both of these work out of the box:
