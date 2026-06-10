@@ -1,6 +1,6 @@
 {
   "name": "@tavon-ai/workspace-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Framework-agnostic HTTP handler exposing a workspace directory: file tree, file contents, git status and diffs. Companion to @tavon-ai/pi-ai-sdk-bridge.",
   "type": "module",
   "license": "MIT",
