@@ -1,6 +1,6 @@
 {
   "name": "@tavon-ai/pi-ai-sdk-bridge",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Third-party bridge from pi AgentSession streams to Vercel AI SDK useChat UI message streams.",
   "type": "module",
   "license": "MIT",
