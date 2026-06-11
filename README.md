@@ -11,8 +11,14 @@ The goal is to use rich [AI Elements](https://elements.ai-sdk.dev/) for the UI w
 `pi-ai-sdk-bridge` exposes an AI SDK-compatible chat HTTP endpoint backed by a live Pi `AgentSession`:
 
 - `POST /api/chat` streams AI SDK UI message chunks from Pi agent events.
+- `GET /api/chat` lists persisted chats.
 - `GET /api/chat/:id` returns persisted session history for a chat id.
-- `DELETE /api/chat/:id` removes a stored session.
+- `DELETE /api/chat/:id` removes a stored chat (in-memory session and session file).
+
+Chats are persisted as regular Pi session files (in Pi's per-cwd session
+directory) keyed by chat id, so history survives bridge restarts and
+`GET /api/chat/:id` rehydrates a chat from disk. Use `--in-memory` for the
+previous ephemeral behavior.
 
 This lets a frontend use AI SDK `useChat` and AI Elements while the backend keeps Pi's agent loop, tools, session state, and streaming events.
 
@@ -81,6 +87,10 @@ Common options:
 - `--base-path <path>` — chat API base path (default: `/api/chat`).
 - `--no-workspace` — disable the read-only workspace API.
 - `--workspace-base-path <path>` — workspace API base path (default: `/api/workspace`).
+- `--provider <name>` — model provider (default: `$PI_PROVIDER`, else Pi settings).
+- `--model, -m <id>` — model id or pattern (default: `$PI_MODEL`, else Pi settings).
+- `--in-memory` — do not persist chats as Pi session files.
+- `--session-dir <dir>` — session file directory (default: Pi's per-cwd default).
 
 ## Frontend usage
 

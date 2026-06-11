@@ -30,7 +30,9 @@ export function createPiChatHandler(options: CreatePiChatHandlerOptions = {}): (
     const path = stripTrailingSlash(url.pathname);
 
     try {
-      if (request.method === "POST" && path === basePath) return handlePost(request, store);
+      // Note: rejections only reach this catch when the handlers are awaited.
+      if (request.method === "POST" && path === basePath) return await handlePost(request, store);
+      if (request.method === "GET" && path === basePath) return await handleList(store);
 
       const streamMatch = path.match(new RegExp(`^${escapeRegExp(basePath)}/([^/]+)/stream$`));
       if (request.method === "GET" && streamMatch?.[1]) return new Response(null, { status: 204 });
@@ -38,8 +40,8 @@ export function createPiChatHandler(options: CreatePiChatHandlerOptions = {}): (
       const chatMatch = path.match(new RegExp(`^${escapeRegExp(basePath)}/([^/]+)$`));
       if (chatMatch?.[1]) {
         const chatId = decodeURIComponent(chatMatch[1]);
-        if (request.method === "GET") return handleGet(chatId, store);
-        if (request.method === "DELETE") return handleDelete(chatId, store);
+        if (request.method === "GET") return await handleGet(chatId, store);
+        if (request.method === "DELETE") return await handleDelete(chatId, store);
       }
 
       return json({ error: "Not found" }, 404);
@@ -102,8 +104,12 @@ async function handlePost(request: Request, store: ChatSessionStore): Promise<Re
 }
 
 async function handleGet(chatId: string, store: ChatSessionStore): Promise<Response> {
-  const record = await store.get(chatId);
+  const record = await store.getOrOpen(chatId);
   return json(record ? piMessagesToUIMessages(record.session.messages as never[]) : []);
+}
+
+async function handleList(store: ChatSessionStore): Promise<Response> {
+  return json({ chats: await store.list() });
 }
 
 async function handleDelete(chatId: string, store: ChatSessionStore): Promise<Response> {
